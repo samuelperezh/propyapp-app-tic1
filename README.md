@@ -1,1 +1,4 @@
-# assety-app-tic1
+# Propyapp
+Proyecto Aplicado en TIC I
+
+Universidad Pontificia Bolivariana
