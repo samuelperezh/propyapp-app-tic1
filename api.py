@@ -11,7 +11,7 @@ class Propiedad(BaseModel):
     area: int
     rooms: int
     garages: int
-    stratum: int
+    stratum: str
     property_type: str
     baths: int
     neighbourhood: str
