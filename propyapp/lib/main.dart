@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-void main() => runApp(MyApp());
+import 'package:intl/intl.dart';
 
 class PredictionData {
   int area;
@@ -38,12 +37,12 @@ class PredictionData {
 }
 
 class PredictionResult {
-  double price;
+  int price;
 
   PredictionResult({required this.price});
 
   factory PredictionResult.fromJson(Map<String, dynamic> json) {
-    return PredictionResult(price: json['price']);
+    return PredictionResult(price: json['prediccion']);
   }
 }
 
@@ -60,10 +59,14 @@ class Api {
     if (response.statusCode == 200) {
       return PredictionResult.fromJson(jsonDecode(response.body));
     } else {
-      throw Exception('Failed to predict price');
+      throw Exception('Error al predecir el precio');
     }
   }
 }
+
+void main() => runApp(MaterialApp(
+  home: MyApp(),
+));
 
 class MyApp extends StatefulWidget {
   @override
@@ -80,7 +83,7 @@ class _MyAppState extends State<MyApp> {
     area: 0,
     rooms: 0,
     garages: 0,
-    stratum: 'Estrato 0',
+    stratum: 'Estrato 3',
     propertyType: 'Casa',
     baths: 0,
     neighbourhood: 'Laureles',
@@ -101,7 +104,7 @@ class _MyAppState extends State<MyApp> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Area'),
+                const Text('Área'),
                 TextField(
                   keyboardType: TextInputType.number,
                   onChanged: (value) {
@@ -111,7 +114,7 @@ class _MyAppState extends State<MyApp> {
                   },
                 ),
                 const SizedBox(height: 16.0),
-                const Text('Rooms'),
+                const Text('Número de habitaciones'),
                 TextField(
                   keyboardType: TextInputType.number,
                   onChanged: (value) {
@@ -121,7 +124,7 @@ class _MyAppState extends State<MyApp> {
                   },
                 ),
                 const SizedBox(height: 16.0),
-                const Text('Garages'),
+                const Text('Número de garajes'),
                 TextField(
                   keyboardType: TextInputType.number,
                   onChanged: (value) {
@@ -131,7 +134,7 @@ class _MyAppState extends State<MyApp> {
                   },
                 ),
                 const SizedBox(height: 16.0),
-                const Text('Stratum'),
+                const Text('Estrato socioeconómico'),
                 DropdownButton<String>(
                   value: data.stratum,
                   onChanged: (value) {
@@ -147,7 +150,7 @@ class _MyAppState extends State<MyApp> {
                   }).toList(),
                 ),
                 const SizedBox(height: 16.0),
-                const Text('Property Type'),
+                const Text('Tipo de propiedad'),
                 DropdownButton<String>(
                   value: data.propertyType,
                   onChanged: (value) {
@@ -163,7 +166,7 @@ class _MyAppState extends State<MyApp> {
                   }).toList(),
                 ),
                 const SizedBox(height: 16.0),
-                const Text('Baths'),
+                const Text('Número de baños'),
                 TextField(
                   keyboardType: TextInputType.number,
                   onChanged: (value) {
@@ -173,7 +176,7 @@ class _MyAppState extends State<MyApp> {
                   },
                 ),
                 const SizedBox(height: 16.0),
-                const Text('Neighbourhood'),
+                const Text('Barrio'),
                 DropdownButton<String>(
                   value: data.neighbourhood,
                   onChanged: (value) {
@@ -207,24 +210,44 @@ class _MyAppState extends State<MyApp> {
                 const SizedBox(height: 16.0),
                 ElevatedButton(
                   onPressed: () async {
-                    PredictionResult result = await Api.predict(data);
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Prediction Result'),
-                          content: Text('Price: ${result.price}'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
+                    try {
+                      PredictionResult result = await Api.predict(data);
+                      final formattedPrice = NumberFormat.currency(symbol: '\$', decimalDigits: 2).format(result.price);
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Resultado de la predicción'),
+                            content: Text('El precio estimado de tu propiedad es de: $formattedPrice'), // Mostrar el precio formateado
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    } catch (e) {
+                      print('Error: $e');
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Error'),
+                            content: Text('Ha ocurrido un error: $e'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
                   },
-                  child: const Text('Predict'),
+                  child: const Text('Predecir'),
                 ),
               ],
             ),
