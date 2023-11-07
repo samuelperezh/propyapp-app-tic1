@@ -1,0 +1,9 @@
+version: 3
+
+services:
+  fastapi:
+    image: propyapp-fastapi
+    build: .
+    container_name: propyapp
+    ports:
+      - "8000:8000"
