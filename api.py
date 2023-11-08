@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pickle
 import pandas as pd
@@ -17,10 +18,19 @@ class Propiedad(BaseModel):
     neighbourhood: str
     city: str
 
-# Create a Flask app
+# Crear la API con FastAPI
 app = FastAPI()
 
-# Define the endpoint for the API
+# Añadir el CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permitir todos los orígenes
+    allow_credentials=True,
+    allow_methods=["*"],  # Permitir todos los métodos
+    allow_headers=["*"],  # Permitir todos los headers
+)
+
+# Definir el endpoint para la predicción de la API
 @app.post('/predecir')
 async def predecir(item:Propiedad):
     # Obtener los valores de las variables
